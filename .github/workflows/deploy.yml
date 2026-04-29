@@ -1,37 +1,37 @@
-name: Vercel-Modern-Deploy
+name: Vercel-Final-Workflow
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ] # Kod birləşməmişdən qabaq yoxlama aparmaq üçün
+    branches: [ "main" ]
 
 jobs:
-  # 1-ci MƏRHƏLƏ: Keyfiyyət və Sintaksis Yoxlanışı (CI)
-  Build_Test:
-    name: 🧪 Kodun Yoxlanılması (CI)
+  # 1. BİLD VƏ TEST MƏRHƏLƏSİ
+  Build-Process:
+    name: 🏗️ Proyektin Hazırlanması
     runs-on: ubuntu-latest
     steps:
       - name: 📦 Kodu Götür
         uses: actions/checkout@v4
 
-      - name: 🛠️ Layihə Strukturunu Analiz Et
+      - name: 🛠️ Quruluş Yoxlanışı
         run: |
-          echo "Server mühiti yoxlanılır..."
-          # Əgər index.html yoxdursa, deploy-u dayandır (Xətanın qarşısını al)
-          [ -f "index.html" ] && echo "index.html tapıldı ✅" || exit 1
+          echo "Build prosesi başlayır..."
+          # Faylların tamlığını yoxlayırıq
+          if [ -f "index.html" ]; then
+            echo "index.html tapıldı, yoxlanış uğurludur."
+          else
+            echo "index.html tapılmadı!"
+            exit 1
+          fi
 
-      - name: 🧪 Sintaksis Testi (Simulation)
-        run: |
-          echo "HTML/CSS strukturu test edilir..."
-          echo "Status: 100% Keçdi."
-
-  # 2-ci MƏRHƏLƏ: Canlıya Çıxış (CD)
-  Deploy:
-    name: 🚀 Production-a Yerləşdirmə (CD)
-    needs: Build_Test # Əgər Test keçməsə, bura heç vaxt başlamasın!
-    if: github.event_name == 'push' # Test hər yerdə işləsin, amma deploy yalnız push-da olsun
+  # 2. DEPLOY MƏRHƏLƏSİ
+  Deploy-Process:
+    name: 🚀 Canlıya Çıxış (Vercel)
+    needs: Build-Process # Yalnız Build uğurlu olsa işləsin
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' # Yalnız push olanda deploy et
     steps:
       - name: 📦 Kodu Götür
         uses: actions/checkout@v4
@@ -43,6 +43,3 @@ jobs:
           vercel-org-id: ${{ secrets.TEAM_ID }}
           vercel-project-id: ${{ secrets.PROJECT_ID }}
           vercel-args: '--prod'
-
-      - name: 📝 Hesabat Hazırla
-        run: echo "Deployment uğurla başa çatdı: $(date)" >> $GITHUB_STEP_SUMMARY
